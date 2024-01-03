@@ -13,13 +13,14 @@ app.use(express.json());
 
 const verifyJWT = (req, res, next) => {
     const authorization = req.headers.authorization;
-    // console.log(req.headers);
+    // console.log(authorization);
 
     if (!authorization) {
-        console.log('inside if block ', req.headers);
+        // console.log('inside if block ', req.headers);
         return res.status(401).send({ error: true, message: 'unauthorized access from !authorization' });
     }
     const token = authorization.split(' ')[1]; //Bearer <token>
+    // console.log('Token inside Verify JWT', token);
 
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
         if (err) {
@@ -58,7 +59,7 @@ async function run() {
         app.post('/jwt', (req, res) => {
             const user = req.body;
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-                expiresIn: 20
+                expiresIn: 600000
             });
             res.send({ token });
         })
@@ -104,14 +105,18 @@ async function run() {
         // cart api
 
         app.get('/carts', verifyJWT, async (req, res) => {
+            const decodedEmail = req.decoded.email; // req.decoded = email, iat, exp
+            // console.log('came back after verify', decoded);
             const email = req.query.email;
-            // console.log(email);
+            // console.log(email, decodedEmail);
+
+            // console.log(req.headers.authorization);
+
             if (!email) {
                 res.send([]);
             }
 
             // to prevent one verify token and get other's data
-            const decodedEmail = req.decoded.email;
             if (email !== decodedEmail) {
                 return res.status(403).send({ error: true, message: 'forbidden access' });
             }
