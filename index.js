@@ -64,8 +64,26 @@ async function run() {
             res.send({ token });
         })
 
-        // users api
-        app.get('/users', async (req, res) => {
+        // check admin or not
+        // Warning: use verifyJWT before using verifyAdmin
+        const verifyAdmin = async (req, res, next) => {
+            const email = req.decoded.email;
+            const query = { email: email };
+            const user = await usersCollection.findOne(query);
+            if (user?.role !== 'admin') {
+                return res.status(403).send({ error: true, message: 'forbidden access' });
+            }
+            next();
+        }
+
+
+        /**
+         * 0. do not show secure links to those who should not see the links isAdmin? <> : <>
+         * 1. use jwt token: verifyJWT
+         * 2. use verifyAdmin middleware
+         */
+        // users api - need to secure
+        app.get('/users', verifyJWT, verifyAdmin, async (req, res) => {
             const result = await usersCollection.find().toArray();
             res.send(result);
         })
@@ -85,6 +103,8 @@ async function run() {
         // admin
         // mainly return admin is true or false
         app.get('/users/admin/:email', verifyJWT, async (req, res) => {
+
+            // we can use middleware for this like verifyAdmin
             const email = req.params.email;
             if (req.decoded.email !== email) {
                 req.send({ admin: false })
