@@ -4,16 +4,36 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 
 require('dotenv').config();
-const port = process.env.PORT || 5000;
+// const port = process.env.PORT || 5000;
+const port = 5000;
 
 // middleware
 app.use(cors());
 app.use(express.json());
 
 
-const verifyJWT = (req, res, next) => {
+// const jwt = require('jsonwebtoken');
+
+// verify the token whether it is valid or not
+// const verifyJWT = async (req, res, next) => {
+//     const authorization = req.headers.authorization;
+//     // console.log(authorization);
+//     const token = authorization.split(' ')[1];
+//     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+//         if (err) {
+//             next(err)
+//         } else {
+//             req.decoded = decoded;
+//             next();
+//         }
+//     });
+// }
+
+// module.exports = verifyToken;
+
+const verifyJWT = async (req, res, next) => {
     const authorization = req.headers.authorization;
-    // console.log(authorization);
+    console.log(authorization);
 
     if (!authorization) {
         // console.log('inside if block ', req.headers);
@@ -142,13 +162,9 @@ async function run() {
             // console.log('came back after verify', decoded);
             const email = req.query.email;
             // console.log(email, decodedEmail);
-
-            // console.log(req.headers.authorization);
-
             if (!email) {
                 res.send([]);
             }
-
             // to prevent one verify token and get other's data
             if (email !== decodedEmail) {
                 return res.status(403).send({ error: true, message: 'forbidden access' });
@@ -191,6 +207,18 @@ run().catch(console.dir);
 app.get('/', (req, res) => {
     res.send("server is running");
 })
+
+
+// const errorHandler = ((err, req, res, next) => {
+//     if (res.headersSent) {
+//         return next(err)
+//     }
+//     res.send({ error: err, message: 'error from my custom errorHndler' });
+// })
+// app.use(errorHandler);
+
+
+
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 })
