@@ -11,36 +11,13 @@ const port = 5000;
 app.use(cors());
 app.use(express.json());
 
-
-// const jwt = require('jsonwebtoken');
-
-// verify the token whether it is valid or not
-// const verifyJWT = async (req, res, next) => {
-//     const authorization = req.headers.authorization;
-//     // console.log(authorization);
-//     const token = authorization.split(' ')[1];
-//     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
-//         if (err) {
-//             next(err)
-//         } else {
-//             req.decoded = decoded;
-//             next();
-//         }
-//     });
-// }
-
-// module.exports = verifyToken;
-
 const verifyJWT = async (req, res, next) => {
     const authorization = req.headers.authorization;
-    console.log(authorization);
 
     if (!authorization) {
-        // console.log('inside if block ', req.headers);
         return res.status(401).send({ error: true, message: 'unauthorized access from !authorization' });
     }
     const token = authorization.split(' ')[1]; //Bearer <token>
-    // console.log('Token inside Verify JWT', token);
 
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
         if (err) {
