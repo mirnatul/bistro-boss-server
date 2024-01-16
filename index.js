@@ -15,6 +15,7 @@ app.use(express.json());
 
 const verifyJWT = async (req, res, next) => {
     const authorization = req.headers.authorization;
+    // console.log(authorization);
 
     if (!authorization) {
         return res.status(401).send({ error: true, message: 'unauthorized access from !authorization' });
@@ -53,6 +54,7 @@ async function run() {
         const menuCollection = client.db("bistroDb").collection("menu");
         const cartCollection = client.db("bistroDb").collection("carts");
         const usersCollection = client.db("bistroDb").collection("users");
+        const paymentCollection = client.db("bistroDb").collection("payments");
 
         // jwt
         app.post('/jwt', (req, res) => {
@@ -151,6 +153,7 @@ async function run() {
         // cart api
 
         app.get('/carts', verifyJWT, async (req, res) => {
+            // console.log('hit carts');
             const decodedEmail = req.decoded.email; // req.decoded = email, iat, exp
             // console.log('came back after verify', decoded);
             const email = req.query.email;
@@ -165,6 +168,7 @@ async function run() {
 
             const query = { email: email };
             const result = await cartCollection.find(query).toArray();
+            // console.log(result);
             res.send(result);
 
         })
@@ -226,6 +230,19 @@ async function run() {
             res.send({
                 clientSecret: paymentIntent.client_secret
             })
+        })
+
+
+        // payment related api
+        app.post('/payments', verifyJWT, async (req, res) => {
+            const payment = req.body;
+            const insertResult = await paymentCollection.insertOne(payment);
+
+            // delete query
+            const query = { _id: { $in: payment.cartItems.map(id => new ObjectId(id)) } }
+            const deleteResult = await cartCollection.deleteMany(query)
+
+            res.send({ insertResult, deleteResult })
         })
 
 
