@@ -180,6 +180,36 @@ async function run() {
             res.send(result);
         })
 
+        // ------
+        app.get('/admin-states', verifyJWT, verifyAdmin, async (req, res) => {
+            const users = await usersCollection.estimatedDocumentCount();
+            const products = await menuCollection.estimatedDocumentCount();
+            const orders = 500;
+
+            // best way to get sum of the price field is to use group and sum operator
+
+            // await collectionName.aggregate([
+            //     {
+            //         $group:{
+            //             _id: null,
+            //             total: {$sum: '$price'}
+            //         }
+            //     }
+            // ])
+
+            // or
+            // load all the data and sum
+
+            const revenue = 1500;
+
+            res.send({
+                users,
+                products,
+                orders,
+                revenue
+            })
+        })
+
 
 
         // Send a ping to confirm a successful connection
