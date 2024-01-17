@@ -186,35 +186,7 @@ async function run() {
             res.send(result);
         })
 
-        // ------
-        app.get('/admin-states', verifyJWT, verifyAdmin, async (req, res) => {
-            const users = await usersCollection.estimatedDocumentCount();
-            const products = await menuCollection.estimatedDocumentCount();
-            const orders = 500;
 
-            // best way to get sum of the price field is to use group and sum operator
-
-            // await collectionName.aggregate([
-            //     {
-            //         $group:{
-            //             _id: null,
-            //             total: {$sum: '$price'}
-            //         }
-            //     }
-            // ])
-
-            // or
-            // load all the data and sum
-
-            const revenue = 1500;
-
-            res.send({
-                users,
-                products,
-                orders,
-                revenue
-            })
-        })
 
         // create payment intent
         app.post('/create-payment-intent', verifyJWT, async (req, res) => {
@@ -243,6 +215,36 @@ async function run() {
             const deleteResult = await cartCollection.deleteMany(query)
 
             res.send({ insertResult, deleteResult })
+        })
+
+
+        app.get('/admin-states', verifyJWT, verifyAdmin, async (req, res) => {
+            const users = await usersCollection.estimatedDocumentCount();
+            const products = await menuCollection.estimatedDocumentCount();
+            const orders = await paymentCollection.estimatedDocumentCount();
+
+            // best way to get sum of the price field is to use group and sum operator
+
+            // await collectionName.aggregate([
+            //     {
+            //         $group:{
+            //             _id: null,
+            //             total: {$sum: '$price'}
+            //         }
+            //     }
+            // ])
+
+            // or
+            // load all the data and sum
+            const payments = await paymentCollection.find().toArray();
+            const revenue = payments.reduce((sum, payment) => sum + payment.price, 0)
+
+            res.send({
+                users,
+                products,
+                orders,
+                revenue
+            })
         })
 
 
